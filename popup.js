@@ -6,8 +6,13 @@ chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
     target: { tabId: tabs[0].id },
     function: getPageText
   }, results => {
+    if (!results || !results[0] || !results[0].result) {
+      document.getElementById("content").textContent = "Failed to capture content.";
+      return;
+    }
+
     capturedText = results[0].result;
-    document.getElementById("content").textContent = capturedText.slice(0, 10000); // safe limit
+    document.getElementById("content").textContent = capturedText.slice(0, 10000); // preview
 
     const blob = new Blob([capturedText], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
@@ -30,23 +35,5 @@ document.getElementById("toggleBtn").addEventListener("click", () => {
 });
 
 function getPageText() {
-  // Remove unwanted elements
-  document.querySelectorAll("nav, footer, aside, header, script, style, noscript, iframe, form, button").forEach(el => el.remove());
-
-  // Extract meaningful content
-  const tags = Array.from(document.querySelectorAll("article, main, p, h1, h2, h3, li"));
-  let text = tags.map(el => el.innerText).join("\n");
-
-  // Clean it
-  text = text
-    .replace(/\s{2,}/g, " ")
-    .replace(/\n{2,}/g, "\n\n")
-    .trim();
-
-  return text;
+  return document.body.innerText;
 }
-
-function getPageText() {
-  return getPageLinks();
-}
-
